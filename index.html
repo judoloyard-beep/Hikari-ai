@@ -3,96 +3,87 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Yuna AI</title>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
 
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #100d20;
-  font-family: Arial, sans-serif;
-  touch-action: none;
+html,body {
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#100d20;
+  font-family:Arial,sans-serif;
+  touch-action:none;
 }
 
 #stage {
-  position: fixed;
-  inset: 0;
+  position:fixed;
+  inset:0;
 }
 
 canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
+  display:block;
+  width:100%;
+  height:100%;
 }
 
 #top {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 25px 20px;
-  color: white;
-  pointer-events: none;
-  background: linear-gradient(#100d20bb, transparent);
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  padding:25px 20px;
+  color:white;
+  pointer-events:none;
+  background:linear-gradient(#100d20bb,transparent);
 }
 
-#top h2 {
-  font-size: 23px;
-}
+#top h2 { font-size:23px; }
 
 #top p {
-  font-size: 12px;
-  color: #d5c9ff;
-  margin-top: 5px;
+  font-size:12px;
+  color:#d5c9ff;
+  margin-top:5px;
 }
 
 #status {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  text-align: center;
-  font-size: 14px;
-  pointer-events: none;
-}
-
-#bottom {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 25px 15px;
-  color: white;
-  text-align: center;
-  font-size: 12px;
-  background: linear-gradient(transparent, #100d20bb);
-  pointer-events: none;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  color:white;
+  text-align:center;
+  font-size:14px;
 }
 
 #reaction {
-  position: fixed;
-  top: 90px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  background: #8c62c9aa;
-  padding: 9px 18px;
-  border-radius: 30px;
-  font-size: 13px;
-  opacity: 0;
-  transition: opacity .25s;
-  pointer-events: none;
+  position:fixed;
+  top:90px;
+  left:50%;
+  transform:translateX(-50%);
+  color:white;
+  background:#8c62c9dd;
+  padding:10px 20px;
+  border-radius:30px;
+  opacity:0;
+  transition:opacity .25s;
+  pointer-events:none;
 }
 
+#bottom {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  padding:25px 15px;
+  color:white;
+  text-align:center;
+  font-size:12px;
+  background:linear-gradient(transparent,#100d20bb);
+  pointer-events:none;
+}
 </style>
 </head>
 
@@ -107,10 +98,7 @@ canvas {
 
 <div id="status">Memuat Yuna...</div>
 <div id="reaction">Yuna senang! 💜</div>
-
-<div id="bottom">
-  Sentuh Yuna atau geser untuk memutar
-</div>
+<div id="bottom">Geser untuk memutar • Sentuh untuk berinteraksi</div>
 
 <script type="importmap">
 {
@@ -128,7 +116,6 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 
-// ELEMENT
 const stage = document.getElementById("stage");
 const status = document.getElementById("status");
 const reaction = document.getElementById("reaction");
@@ -139,143 +126,129 @@ scene.background = new THREE.Color("#171128");
 
 // CAMERA
 const camera = new THREE.PerspectiveCamera(
-  35,
-  innerWidth / innerHeight,
-  0.01,
-  100
+  35, innerWidth/innerHeight, 0.01, 100
 );
 
 // RENDERER
 const renderer = new THREE.WebGLRenderer({
-  antialias: true,
-  alpha: false
+  antialias:true,
+  alpha:false
 });
 
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-
 stage.appendChild(renderer.domElement);
 
 // LIGHT
 scene.add(new THREE.HemisphereLight(
-  0xffffff,
-  0x675080,
-  2
+  0xffffff,0x675080,2
 ));
 
-const light = new THREE.DirectionalLight(0xffffff, 2);
-light.position.set(2, 4, 5);
+const light = new THREE.DirectionalLight(0xffffff,2);
+light.position.set(2,4,5);
 scene.add(light);
 
 // CAMERA CONTROL
-let target = new THREE.Vector3(0, 0.8, 0);
+let target = new THREE.Vector3(0,0.8,0);
 let distance = 3;
 let angle = 0;
 let vertical = 0.08;
 
 function updateCamera() {
   camera.position.set(
-    target.x + Math.sin(angle) * distance,
-    target.y + vertical * distance,
-    target.z + Math.cos(angle) * distance
+    target.x + Math.sin(angle)*distance,
+    target.y + vertical*distance,
+    target.z + Math.cos(angle)*distance
   );
-
   camera.lookAt(target);
 }
 
 updateCamera();
 
 // VRM
-let currentVRM = null;
-let bones = {};
-let baseRotations = {};
-let baseHipY = 0;
+let vrm = null;
+const bones = {};
+const base = {};
 
-const loader = new GLTFLoader();
+const boneNames = [
+  "hips",
+  "spine",
+  "chest",
+  "upperChest",
+  "neck",
+  "head",
+  "leftUpperArm",
+  "rightUpperArm",
+  "leftLowerArm",
+  "rightLowerArm"
+];
 
-loader.register(parser => {
-  return new VRMLoaderPlugin(parser);
-});
-
-// GET BONE
 function getBone(name) {
-  return currentVRM?.humanoid?.getNormalizedBoneNode(name) || null;
+  return vrm?.humanoid?.getNormalizedBoneNode(name) || null;
 }
 
-// SAVE ORIGINAL ROTATIONS
-function saveBone(name) {
-  const bone = getBone(name);
+function saveBones() {
+  boneNames.forEach(name => {
+    const bone = getBone(name);
+    if (!bone) return;
 
-  if (!bone) return;
+    bones[name] = bone;
 
-  bones[name] = bone;
-
-  baseRotations[name] = {
-    x: bone.rotation.x,
-    y: bone.rotation.y,
-    z: bone.rotation.z
-  };
+    base[name] = {
+      x:bone.rotation.x,
+      y:bone.rotation.y,
+      z:bone.rotation.z,
+      px:bone.position.x,
+      py:bone.position.y,
+      pz:bone.position.z
+    };
+  });
 }
 
 // LOAD MODEL
+const loader = new GLTFLoader();
+
+loader.register(parser => new VRMLoaderPlugin(parser));
+
 loader.load(
   "assets/models/yuna.vrm",
 
-  (gltf) => {
+  gltf => {
 
-    const vrm = gltf.userData.vrm;
+    vrm = gltf.userData.vrm;
 
     if (!vrm) {
-      status.textContent = "Model VRM tidak terbaca.";
+      status.textContent = "VRM tidak terbaca!";
       return;
     }
 
     VRMUtils.removeUnnecessaryVertices(gltf.scene);
     VRMUtils.removeUnnecessaryJoints(gltf.scene);
-
     VRMUtils.rotateVRM0(vrm);
 
     vrm.scene.traverse(obj => {
       obj.frustumCulled = false;
     });
 
-    currentVRM = vrm;
     scene.add(vrm.scene);
 
-    // GET MODEL SIZE
     const box = new THREE.Box3().setFromObject(vrm.scene);
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
 
     target.copy(center);
-
-    const height = Math.max(size.y, 1);
-    distance = height * 2.15;
+    distance = Math.max(size.y,1)*2.15;
 
     camera.updateProjectionMatrix();
     updateCamera();
 
-    // PREPARE BONES
-    [
-      "hips",
-      "spine",
-      "chest",
-      "upperChest",
-      "neck",
-      "head",
-      "leftUpperArm",
-      "rightUpperArm"
-    ].forEach(saveBone);
-
-    if (bones.hips) {
-      baseHipY = bones.hips.position.y;
-    }
+    saveBones();
 
     status.style.display = "none";
 
-    console.log("Yuna berhasil dimuat!");
-    console.log("Bones:", bones);
+    console.log("Yuna loaded");
+    console.log("Available bones:",Object.keys(bones));
 
   },
 
@@ -283,249 +256,207 @@ loader.load(
 
   error => {
     console.error(error);
-    status.textContent = "Gagal memuat model Yuna. Periksa file VRM.";
+    status.textContent = "Gagal memuat model VRM!";
   }
 );
 
-// IDLE ANIMATION
+// ANIMATION SETTINGS
+
 const clock = new THREE.Clock();
 
-let nextBlink = 4;
-let blinkAmount = 0;
+let elapsed = 0;
+let blinkTimer = 0;
+let blinkValue = 0;
+let happyTimer = 0;
+let touchReaction = 0;
 
-let happyUntil = 0;
-let headReaction = 0;
+function smoothStep(x) {
+  x = THREE.MathUtils.clamp(x,0,1);
+  return x*x*(3-2*x);
+}
 
-function animateYuna(time) {
+function animateBone(name,x,y,z) {
+  const bone = bones[name];
+  const b = base[name];
 
-  if (!currentVRM) return;
+  if (!bone || !b) return;
 
-  const t = time;
+  bone.rotation.set(
+    b.x+x,
+    b.y+y,
+    b.z+z
+  );
+}
 
-  // BREATHING
-  const breath = Math.sin(t * 1.5) * 0.012;
+// IDLE ANIMATION
+function updateYuna(dt) {
+
+  if (!vrm) return;
+
+  elapsed += dt;
+
+  const t = elapsed;
+
+  // PROGRESS TRANSISI DARI T-POSE
+  const armBlend = smoothStep(t/2.5);
+
+  // GERAKAN NAPAS
+  const breathing = Math.sin(t*1.5);
 
   // BODY SWAY
-  const sway = Math.sin(t * 0.8) * 0.018;
+  const sway = Math.sin(t*0.8);
 
   // HIPS
+  animateBone(
+    "hips",
+    0,
+    sway*0.015,
+    0
+  );
+
   if (bones.hips) {
-    const b = baseRotations.hips;
-
-    bones.hips.rotation.x = b.x;
-    bones.hips.rotation.y = b.y + sway;
-    bones.hips.rotation.z = b.z;
-
+    const b = base.hips;
     bones.hips.position.y =
-      baseHipY + Math.sin(t * 1.5) * 0.008;
+      b.py + breathing*0.008;
   }
 
   // SPINE
-  if (bones.spine) {
-    const b = baseRotations.spine;
-
-    bones.spine.rotation.x = b.x + breath;
-    bones.spine.rotation.y = b.y;
-    bones.spine.rotation.z = b.z + sway * 0.4;
-  }
+  animateBone(
+    "spine",
+    breathing*0.012,
+    0,
+    sway*0.008
+  );
 
   // CHEST
-  if (bones.chest) {
-    const b = baseRotations.chest;
-
-    bones.chest.rotation.x =
-      b.x + Math.sin(t * 1.5) * 0.008;
-
-    bones.chest.rotation.y = b.y;
-    bones.chest.rotation.z = b.z;
-  }
+  animateBone(
+    "chest",
+    breathing*0.009,
+    0,
+    0
+  );
 
   // UPPER CHEST
-  if (bones.upperChest) {
-    const b = baseRotations.upperChest;
-
-    bones.upperChest.rotation.x =
-      b.x + Math.sin(t * 1.5) * 0.006;
-
-    bones.upperChest.rotation.y = b.y;
-    bones.upperChest.rotation.z = b.z;
-  }
-
-  // HEAD
-  if (bones.head) {
-    const b = baseRotations.head;
-
-    const reactionTilt = headReaction * 0.13;
-
-    bones.head.rotation.x =
-      b.x + Math.sin(t * 0.7) * 0.025;
-
-    bones.head.rotation.y =
-      b.y + Math.sin(t * 0.45) * 0.07;
-
-    bones.head.rotation.z =
-      b.z + Math.sin(t * 0.9) * 0.025 - reactionTilt;
-  }
+  animateBone(
+    "upperChest",
+    breathing*0.006,
+    0,
+    0
+  );
 
   // NECK
-  if (bones.neck) {
-    const b = baseRotations.neck;
+  animateBone(
+    "neck",
+    Math.sin(t*0.7)*0.012,
+    Math.sin(t*0.45)*0.025,
+    0
+  );
 
-    bones.neck.rotation.x =
-      b.x + Math.sin(t * 0.7) * 0.012;
+  // HEAD
+  animateBone(
+    "head",
+    Math.sin(t*0.7)*0.025,
+    Math.sin(t*0.45)*0.055,
+    Math.sin(t*0.9)*0.018-touchReaction*0.12
+  );
 
-    bones.neck.rotation.y =
-      b.y + Math.sin(t * 0.45) * 0.025;
+  // ARM DROP
+  // VRM NORMALIZED LEFT/RIGHT ARM
+  const leftDrop = -1.05 * armBlend;
+  const rightDrop = 1.05 * armBlend;
 
-    bones.neck.rotation.z = b.z;
+  animateBone(
+    "leftUpperArm",
+    Math.sin(t*0.8)*0.012,
+    0,
+    leftDrop + Math.sin(t*0.9)*0.012
+  );
+
+  animateBone(
+    "rightUpperArm",
+    -Math.sin(t*0.8)*0.012,
+    0,
+    rightDrop - Math.sin(t*0.9)*0.012
+  );
+
+  // ELBOW
+  animateBone(
+    "leftLowerArm",
+    0,
+    0,
+    -0.08*armBlend
+  );
+
+  animateBone(
+    "rightLowerArm",
+    0,
+    0,
+    0.08*armBlend
+  );
+
+  // BLINK
+  blinkTimer -= dt;
+
+  if (blinkTimer <= 0) {
+    blinkValue = 0.18;
+    blinkTimer = 3.5 + Math.random()*2.5;
   }
 
-  // ARMS
-  if (bones.leftUpperArm) {
-    const b = baseRotations.leftUpperArm;
-
-    bones.leftUpperArm.rotation.z =
-      b.z + Math.sin(t * 1.2) * 0.018;
-
-    bones.leftUpperArm.rotation.x =
-      b.x + Math.sin(t * 0.8) * 0.012;
+  if (blinkValue > 0) {
+    blinkValue = Math.max(0,blinkValue-dt*5);
   }
 
-  if (bones.rightUpperArm) {
-    const b = baseRotations.rightUpperArm;
+  if (vrm.expressionManager) {
+    try {
+      vrm.expressionManager.setValue(
+        "blink",
+        blinkValue
+      );
 
-    bones.rightUpperArm.rotation.z =
-      b.z - Math.sin(t * 1.2) * 0.018;
-
-    bones.rightUpperArm.rotation.x =
-      b.x - Math.sin(t * 0.8) * 0.012;
+      vrm.expressionManager.setValue(
+        "happy",
+        happyTimer > 0 ? 0.8 : 0
+      );
+    } catch(e) {
+      console.log("Expression tidak tersedia",e);
+    }
   }
 
-  // AUTO BLINK
-  if (t >= nextBlink) {
-    nextBlink = t + 3.5 + Math.random() * 2.5;
-  }
+  happyTimer = Math.max(0,happyTimer-dt);
+  touchReaction = Math.max(0,touchReaction-dt*2);
 
-  const blinkStart = nextBlink - 0.18;
-  const blinkProgress = (t - blinkStart) / 0.18;
-
-  blinkAmount = 0;
-
-  if (blinkProgress >= 0 && blinkProgress <= 1) {
-    blinkAmount = Math.sin(blinkProgress * Math.PI);
-  }
-
-  // EXPRESSIONS
-  if (currentVRM.expressionManager) {
-
-    currentVRM.expressionManager.setValue(
-      "blink",
-      blinkAmount
-    );
-
-    currentVRM.expressionManager.setValue(
-      "happy",
-      t < happyUntil ? 1 : 0
-    );
-
-  }
-
-  // TOUCH REACTION DECAY
-  headReaction = Math.max(0, headReaction - 0.025);
-
-  currentVRM.update(clock.getDelta());
+  // VRM UPDATE HANYA SEKALI PER FRAME
+  vrm.update(dt);
 }
 
-// TOUCH INTERACTION
+// TOUCH SYSTEM
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
 let dragging = false;
-let lastX = 0;
-let lastY = 0;
 let startX = 0;
 let startY = 0;
+let lastX = 0;
+let lastY = 0;
 
-const headPosition = new THREE.Vector3();
-
-renderer.domElement.addEventListener("pointerdown", e => {
-
+renderer.domElement.addEventListener("pointerdown",e => {
   dragging = true;
 
-  lastX = startX = e.clientX;
-  lastY = startY = e.clientY;
-
+  startX = lastX = e.clientX;
+  startY = lastY = e.clientY;
 });
 
-window.addEventListener("pointerup", e => {
+window.addEventListener("pointermove",e => {
 
   if (!dragging) return;
 
-  dragging = false;
+  const dx = e.clientX-lastX;
+  const dy = e.clientY-lastY;
 
-  const moved = Math.hypot(
-    e.clientX - startX,
-    e.clientY - startY
-  );
-
-  // SHORT TOUCH
-  if (moved < 10 && currentVRM) {
-
-    const rect = renderer.domElement.getBoundingClientRect();
-
-    pointer.x =
-      ((e.clientX - rect.left) / rect.width) * 2 - 1;
-
-    pointer.y =
-      -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-    raycaster.setFromCamera(pointer, camera);
-
-    const hits = raycaster.intersectObject(
-      currentVRM.scene,
-      true
-    );
-
-    const head = getBone("head");
-
-    if (head && hits.length) {
-
-      head.getWorldPosition(headPosition);
-
-      const hit = hits[0].point;
-
-      if (hit.distanceTo(headPosition) < 0.35) {
-
-        happyUntil = clock.getElapsedTime() + 1.5;
-        headReaction = 1;
-
-        reaction.style.opacity = "1";
-
-        setTimeout(() => {
-          reaction.style.opacity = "0";
-        }, 1300);
-
-        console.log("Yuna disentuh di kepala!");
-
-      }
-
-    }
-
-  }
-
-});
-
-window.addEventListener("pointermove", e => {
-
-  if (!dragging) return;
-
-  const dx = e.clientX - lastX;
-  const dy = e.clientY - lastY;
-
-  angle -= dx * 0.008;
+  angle -= dx*0.008;
 
   vertical = THREE.MathUtils.clamp(
-    vertical + dy * 0.003,
+    vertical+dy*0.003,
     -0.5,
     0.5
   );
@@ -534,29 +465,69 @@ window.addEventListener("pointermove", e => {
   lastY = e.clientY;
 
   updateCamera();
+});
 
+window.addEventListener("pointerup",e => {
+
+  if (!dragging) return;
+
+  dragging = false;
+
+  const moved = Math.hypot(
+    e.clientX-startX,
+    e.clientY-startY
+  );
+
+  if (moved > 12 || !vrm) return;
+
+  const rect = renderer.domElement.getBoundingClientRect();
+
+  pointer.x =
+    ((e.clientX-rect.left)/rect.width)*2-1;
+
+  pointer.y =
+    -((e.clientY-rect.top)/rect.height)*2+1;
+
+  raycaster.setFromCamera(pointer,camera);
+
+  const hits = raycaster.intersectObject(
+    vrm.scene,true
+  );
+
+  if (hits.length) {
+
+    happyTimer = 1.5;
+    touchReaction = 1;
+
+    reaction.textContent = "Yuna senang! 💜";
+    reaction.style.opacity = "1";
+
+    setTimeout(() => {
+      reaction.style.opacity = "0";
+    },1200);
+
+  }
 });
 
 // ZOOM
-renderer.domElement.addEventListener("wheel", e => {
+renderer.domElement.addEventListener("wheel",e => {
 
   distance = THREE.MathUtils.clamp(
-    distance + e.deltaY * 0.005,
+    distance+e.deltaY*0.005,
     0.8,
     10
   );
 
   updateCamera();
-
 });
 
 // RESIZE
-window.addEventListener("resize", () => {
+window.addEventListener("resize",() => {
 
-  camera.aspect = innerWidth / innerHeight;
+  camera.aspect = innerWidth/innerHeight;
   camera.updateProjectionMatrix();
 
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(innerWidth,innerHeight);
 
 });
 
@@ -565,17 +536,15 @@ function animate() {
 
   requestAnimationFrame(animate);
 
-  const delta = clock.getDelta();
+  const dt = Math.min(clock.getDelta(),0.05);
 
-  animateYuna(clock.elapsedTime);
+  updateYuna(dt);
 
-  renderer.render(scene, camera);
-
+  renderer.render(scene,camera);
 }
 
 animate();
 
 </script>
-
 </body>
 </html>

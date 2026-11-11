@@ -394,37 +394,16 @@ function updateYuna(dt) {
     0.08*armBlend
   );
 
-  // BLINK
-  blinkTimer -= dt;
+  // KEMBALIKAN LENGAN KE POSE ASLI
+["leftUpperArm", "rightUpperArm",
+ "leftLowerArm", "rightLowerArm"].forEach(name => {
+  const bone = bones[name];
+  const b = base[name];
 
-  if (blinkTimer <= 0) {
-    blinkValue = 0.18;
-    blinkTimer = 3.5 + Math.random()*2.5;
-  }
+  if (!bone || !b) return;
 
-  if (blinkValue > 0) {
-    blinkValue = Math.max(0,blinkValue-dt*5);
-  }
-
-  if (vrm.expressionManager) {
-    try {
-      vrm.expressionManager.setValue(
-        "blink",
-        blinkValue
-      );
-
-      vrm.expressionManager.setValue(
-        "happy",
-        happyTimer > 0 ? 0.8 : 0
-      );
-    } catch(e) {
-      console.log("Expression tidak tersedia",e);
-    }
-  }
-
-  happyTimer = Math.max(0,happyTimer-dt);
-  touchReaction = Math.max(0,touchReaction-dt*2);
-
+  bone.rotation.set(b.x, b.y, b.z);
+});
   // VRM UPDATE HANYA SEKALI PER FRAME
   vrm.update(dt);
 }

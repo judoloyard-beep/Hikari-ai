@@ -198,8 +198,14 @@ loader.load(
     VRMUtils.removeUnnecessaryVertices(gltf.scene);
     VRMUtils.removeUnnecessaryJoints(gltf.scene);
 
-    currentVRM = vrm;
-    scene.add(vrm.scene);
+    VRMUtils.rotateVRM0(vrm);
+
+vrm.scene.traverse((obj) => {
+  obj.frustumCulled = false;
+});
+
+currentVRM = vrm;
+scene.add(vrm.scene);
 
     // HITUNG UKURAN KARAKTER
     const box = new THREE.Box3().setFromObject(vrm.scene);

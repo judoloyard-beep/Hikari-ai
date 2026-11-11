@@ -1,0 +1,316 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Yuna AI</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #100d20;
+  font-family: Arial, sans-serif;
+  touch-action: none;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 20px;
+  color: white;
+  pointer-events: none;
+  background: linear-gradient(#100d20aa, transparent);
+}
+
+#top h2 {
+  font-size: 23px;
+}
+
+#top p {
+  font-size: 12px;
+  color: #d5c9ff;
+  margin-top: 5px;
+}
+
+#status {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #e5d9ff;
+  font-size: 14px;
+  text-align: center;
+  width: 85%;
+  pointer-events: none;
+}
+
+#bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 25px 20px;
+  text-align: center;
+  color: white;
+  font-size: 12px;
+  background: linear-gradient(transparent, #100d20bb);
+  pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="stage"></div>
+
+<div id="top">
+  <h2>Yuna 🌸</h2>
+  <p>Your 3D AI Companion</p>
+</div>
+
+<div id="status">
+  Memuat dunia Yuna...
+</div>
+
+<div id="bottom">
+  Geser layar untuk memutar karakter
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+    "@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.2.0/lib/three-vrm.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
+
+const stage = document.getElementById("stage");
+const status = document.getElementById("status");
+
+// SCENE
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#171128");
+
+// CAMERA
+const camera = new THREE.PerspectiveCamera(
+  35,
+  innerWidth / innerHeight,
+  0.01,
+  100
+);
+
+// RENDERER
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: false
+});
+
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+stage.appendChild(renderer.domElement);
+
+// LIGHTING
+scene.add(new THREE.HemisphereLight(
+  0xffffff,
+  0x675080,
+  2
+));
+
+const light = new THREE.DirectionalLight(
+  0xffffff,
+  2
+);
+
+light.position.set(2, 4, 5);
+scene.add(light);
+
+// CAMERA CONTROL
+let target = new THREE.Vector3(0, 0.8, 0);
+let distance = 3;
+let angle = 0;
+let vertical = 0.08;
+
+function updateCamera() {
+  camera.position.set(
+    target.x + Math.sin(angle) * distance,
+    target.y + vertical * distance,
+    target.z + Math.cos(angle) * distance
+  );
+
+  camera.lookAt(target);
+}
+
+updateCamera();
+
+// LOAD VRM
+let currentVRM = null;
+
+const loader = new GLTFLoader();
+
+loader.register(parser => {
+  return new VRMLoaderPlugin(parser);
+});
+
+loader.load(
+  "assets/models/yuna.vrm",
+
+  (gltf) => {
+    const vrm = gltf.userData.vrm;
+
+    if (!vrm) {
+      status.textContent = "Model VRM tidak terbaca.";
+      return;
+    }
+
+    VRMUtils.removeUnnecessaryVertices(gltf.scene);
+    VRMUtils.removeUnnecessaryJoints(gltf.scene);
+
+    currentVRM = vrm;
+    scene.add(vrm.scene);
+
+    // HITUNG UKURAN KARAKTER
+    const box = new THREE.Box3().setFromObject(vrm.scene);
+    const size = box.getSize(new THREE.Vector3());
+
+    const center = box.getCenter(new THREE.Vector3());
+
+    target.set(
+      center.x,
+      center.y,
+      center.z
+    );
+
+    // KAMERA MENYESUAIKAN FULL BODY
+    const height = Math.max(size.y, 1);
+
+    distance = height * 2.15;
+
+    camera.fov = 35;
+    camera.near = 0.01;
+    camera.far = 100;
+    camera.updateProjectionMatrix();
+
+    updateCamera();
+
+    status.style.display = "none";
+
+    console.log("Yuna berhasil dimuat!");
+  },
+
+  undefined,
+
+  (error) => {
+    console.error(error);
+
+    status.textContent =
+      "Model Yuna belum ditemukan. Periksa file yuna.vrm di assets/models/";
+  }
+);
+
+// TOUCH & MOUSE
+let dragging = false;
+let lastX = 0;
+let lastY = 0;
+
+renderer.domElement.addEventListener("pointerdown", e => {
+  dragging = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+});
+
+window.addEventListener("pointerup", () => {
+  dragging = false;
+});
+
+window.addEventListener("pointermove", e => {
+  if (!dragging) return;
+
+  const dx = e.clientX - lastX;
+  const dy = e.clientY - lastY;
+
+  angle -= dx * 0.008;
+  vertical = THREE.MathUtils.clamp(
+    vertical + dy * 0.003,
+    -0.5,
+    0.5
+  );
+
+  lastX = e.clientX;
+  lastY = e.clientY;
+
+  updateCamera();
+});
+
+// ZOOM
+renderer.domElement.addEventListener("wheel", e => {
+  distance = THREE.MathUtils.clamp(
+    distance + e.deltaY * 0.005,
+    0.8,
+    10
+  );
+
+  updateCamera();
+});
+
+// RESIZE
+window.addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// ANIMATION LOOP
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+
+  if (currentVRM) {
+    currentVRM.update(delta);
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+</script>
+</body>
+  </html>
+  
